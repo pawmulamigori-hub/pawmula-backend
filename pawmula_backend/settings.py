@@ -1,15 +1,6 @@
-"""
-Django settings for the PAWMULA.LTD admin API.
-
-Database: Supabase Postgres in production (DATABASE_URL env var).
-Falls back to local SQLite when DATABASE_URL is not set, so this repo
-runs standalone before a Supabase project exists.
-"""
-
 import os
 from datetime import timedelta
 from pathlib import Path
-
 import dj_database_url
 from dotenv import load_dotenv
 
@@ -17,12 +8,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
 
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "dev-only-insecure-key-change-in-prod")
-DEBUG = os.environ.get("DJANGO_DEBUG", "true").lower() == "true"
-ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+DEBUG = True  # Force debug mode
+ALLOWED_HOSTS = ['*']  # Allow all hosts
 
-# ---------------------------------------------------------------
-# STATIC FILES - MUST BE DEFINED BEFORE COLLECTSTATIC
-# ---------------------------------------------------------------
+# Static files
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = []
@@ -32,9 +21,6 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# ---------------------------------------------------------------
-# INSTALLED APPS
-# ---------------------------------------------------------------
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -61,9 +47,6 @@ INSTALLED_APPS = [
     "site_settings",
 ]
 
-# ---------------------------------------------------------------
-# MIDDLEWARE
-# ---------------------------------------------------------------
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
@@ -96,9 +79,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "pawmula_backend.wsgi.application"
 
-# ---------------------------------------------------------------
-# DATABASE — Supabase Postgres via DATABASE_URL, SQLite fallback
-# ---------------------------------------------------------------
 DATABASE_URL = os.environ.get("DATABASE_URL")
 if DATABASE_URL:
     DATABASES = {"default": dj_database_url.parse(DATABASE_URL, conn_max_age=600)}
@@ -123,12 +103,8 @@ LANGUAGE_CODE = "en-us"
 TIME_ZONE = "Africa/Nairobi"
 USE_I18N = True
 USE_TZ = True
-
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# ---------------------------------------------------------------
-# DRF + JWT
-# ---------------------------------------------------------------
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
@@ -146,32 +122,14 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": True,
 }
 
-# ---------------------------------------------------------------
-# CORS — allow the separate React admin app (and public site) origins
-# ---------------------------------------------------------------
-CORS_ALLOWED_ORIGINS = os.environ.get(
-    "CORS_ALLOWED_ORIGINS",
-    "http://localhost:5174,http://localhost:5173,http://127.0.0.1:5174,http://127.0.0.1:5173,http://localhost:3000",
-).split(",")
+CORS_ALLOWED_ORIGINS = [
+    "https://pawmula-admin.netlify.app",
+    "http://localhost:5174",
+    "http://localhost:5173",
+    "https://pawmula-backend.onrender.com",
+]
 CORS_ALLOW_CREDENTIALS = True
 
-# ---------------------------------------------------------------
-# Security headers — enabled in production when DEBUG is False
-# ---------------------------------------------------------------
-if not DEBUG:
-    SECURE_BROWSER_XSS_FILTER = True
-    SECURE_CONTENT_TYPE_NOSNIFF = True
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-    X_FRAME_OPTIONS = "DENY"
-    SECURE_SSL_REDIRECT = os.environ.get("SECURE_SSL_REDIRECT", "true").lower() == "true"
-    SECURE_HSTS_SECONDS = 31536000
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_HSTS_PRELOAD = True
-
-# ---------------------------------------------------------------
-# Supabase Storage (media uploads) — read by core/storage.py
-# ---------------------------------------------------------------
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
 SUPABASE_SERVICE_ROLE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY", "")
 SUPABASE_STORAGE_BUCKET = os.environ.get("SUPABASE_STORAGE_BUCKET", "pawmula-media")
