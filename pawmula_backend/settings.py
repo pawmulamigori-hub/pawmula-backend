@@ -8,7 +8,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
 
 SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY", "dev-only-insecure-key-change-in-prod")
-DEBUG = True  # Force debug mode
+DEBUG = os.environ.get("DJANGO_DEBUG", "false").lower() == "true"  # ✅ Read from environment
 ALLOWED_HOSTS = ['*']  # Allow all hosts
 
 # Static files
